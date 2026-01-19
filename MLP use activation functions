@@ -1,0 +1,98 @@
+import numpy as np
+
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+def sigmoid_derivative(y):
+    return y * (1 - y)
+
+def relu(x):
+    return np.maximum(0, x)
+
+def relu_derivative(x):
+    return (x > 0).astype(float)
+
+def initialize_data():
+    X = np.array([[1, 1, 0, 1]])
+    Y = np.array([[1]])
+    
+    W1 = np.array([
+        [0.3, 0.1, -0.2],
+        [-0.2, 0.4, 0.3],
+        [0.2, -0.3, 0.1],
+        [0.1, 0.4, -0.1]
+    ])
+    B1 = np.array([[0.2, 0.1, 0.05]])
+    
+    W2 = np.array([
+        [0.3, -0.2],
+        [0.1, 0.4],
+        [-0.3, 0.2]
+    ])
+    B2 = np.array([[0.1, -0.2]])
+    
+    V = np.array([[0.2], [-0.3]])
+    C = np.array([[0.1]])
+    
+    return X, Y, W1, B1, W2, B2, V, C
+
+def train_network():
+    X, Y, W1, B1, W2, B2, V, C = initialize_data()
+    
+    learning_rate = 0.65
+    threshold = 0.001
+    epoch = 0
+    first_pass_done = False
+
+    while True:
+        epoch += 1
+
+        z1 = np.dot(X, W1) + B1
+        h1 = relu(z1)
+        
+        z2 = np.dot(h1, W2) + B2
+        h2 = relu(z2)
+        
+        u = np.dot(h2, V) + C
+        output = sigmoid(u)
+
+        error = Y - output
+
+        if not first_pass_done:
+            print("\n--- First Epoch ---")
+            print("Output:", output.item())
+            print("Error:", error.item())
+            print("Updated W1:\n", W1)
+            print("Updated b1:\n", B1)
+            print("Updated W2:\n", W2)
+            print("Updated b2:\n", B2)
+            print("Updated V:\n", V)
+            print("Updated C:\n", C)
+            first_pass_done = True
+
+        if abs(error.item()) < threshold:
+            print("\n--- Last Epoch ---")
+            print("Epoch:", epoch)
+            print("Output:", output.item())
+            print("Error:", error.item())
+            print("Final W1:\n", W1)
+            print("Final b1:\n", B1)
+            print("Final W2:\n", W2)
+            print("Final b2:\n", B2)
+            print("Final V:\n", V)
+            print("Final C:\n", C)
+            break
+
+        d_output = error * sigmoid_derivative(output)
+        d_h2 = d_output.dot(V.T) * relu_derivative(z2)
+        d_h1 = d_h2.dot(W2.T) * relu_derivative(z1)
+
+        V += learning_rate * h2.T.dot(d_output)
+        C += learning_rate * d_output
+        W2 += learning_rate * h1.T.dot(d_h2)
+        B2 += learning_rate * d_h2
+        W1 += learning_rate * X.T.dot(d_h1)
+        B1 += learning_rate * d_h1
+
+if __name__ == "__main__":
+    train_network()
