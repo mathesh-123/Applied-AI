@@ -1,0 +1,44 @@
+import torch
+import torch.nn as nn
+import numpy as np
+import matplotlib.pyplot as plt
+
+# 1. தரவுகளை உருவாக்குதல் (Data Preparation)
+# y = 2x + 1 என்கிற சமன்பாட்டை மாடல் கண்டுபிடிக்க வேண்டும்
+X = torch.linspace(-1, 1, 100).reshape(-1, 1)
+y = 2 * X + 1 + torch.randn(X.size()) * 0.1 # கொஞ்சம் சத்தம் (noise) சேர்க்கப்பட்டது
+
+# 2. MLP மாடல் கட்டமைப்பு
+class LinearMLP(nn.Module):
+    def __init__(self):
+        super(LinearMLP, self).__init__()
+        self.layers = nn.Sequential(
+            nn.Linear(1, 10),  # Input layer -> Hidden layer
+            nn.ReLU(),         # Activation function
+            nn.Linear(10, 1)   # Hidden layer -> Output layer
+        )
+
+    def forward(self, x):
+        return self.layers(x)
+
+model = LinearMLP()
+
+# 3. Loss மற்றும் Optimizer
+criterion = nn.MSELoss()
+optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
+
+# 4. பயிற்சி (Training Loop)
+epochs = 500
+for epoch in range(epochs):
+    predictions = model(X)
+    loss = criterion(predictions, y)
+    
+    optimizer.zero_grad()
+    loss.backward()
+    optimizer.step()
+
+    if (epoch+1) % 100 == 0:
+        print(f'Epoch [{epoch+1}/{epochs}], Loss: {loss.item():.4f}')
+
+# 5. முடிவு (Prediction)
+predicted = model(X).detach().numpy()
