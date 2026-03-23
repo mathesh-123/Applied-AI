@@ -1,1 +1,35 @@
+import tensorflow as tf
+import numpy as np
+import matplotlib.pyplot as plt
 
+# 1. Generate Synthetic Data
+X = np.linspace(-1, 1, 200)
+y = 2 * X + np.random.randn(*X.shape) * 0.1
+
+# 2. Function to build and train a model with a specific optimizer
+def train_with_optimizer(opt_name, learning_rate=0.01):
+    model = tf.keras.Sequential([
+        tf.keras.layers.Dense(units=1, input_shape=[1])
+    ])
+    
+    model.compile(optimizer=opt_name, loss='mse')
+    
+    # Record the loss at each epoch
+    history = model.fit(X, y, epochs=100, verbose=0)
+    return history.history['loss']
+
+# 3. Running the Analysis
+optimizers = ['sgd', 'rmsprop', 'adam']
+results = {opt: train_with_optimizer(opt) for opt in optimizers}
+
+# 4. Plotting the results
+plt.figure(figsize=(10, 6))
+for opt, loss in results.items():
+    plt.plot(loss, label=opt.upper())
+
+plt.title('Gradient Descent Analysis: Optimizer Comparison')
+plt.xlabel('Epochs')
+plt.ylabel('Mean Squared Error (Loss)')
+plt.legend()
+plt.grid(True)
+plt.show()
